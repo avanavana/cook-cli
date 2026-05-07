@@ -39,3 +39,27 @@ PRs should explain:
 - when `dev` is ready, merge `dev` into `main`
 - a push to `main` runs `semantic-release`
 - semantic-release generates release notes, updates `CHANGELOG.md`, and publishes a GitHub Release
+
+## Post-release sync
+
+Because semantic-release commits the updated `CHANGELOG.md` back to `main`, `main` will move ahead of `dev` after every release.
+
+After each release completes:
+
+1. update your local refs
+2. merge `main` back into `dev`
+3. push the updated `dev` branch
+
+Recommended commands:
+
+```bash
+git checkout main
+git pull origin main
+
+git checkout dev
+git pull origin dev
+git merge origin/main
+git push origin dev
+```
+
+New feature branches should always start from the updated `dev` branch after this sync step.
