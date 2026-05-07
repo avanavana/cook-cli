@@ -4,8 +4,6 @@
 
 <h1 align="center"><code>cook</code> CLI</h1>
 
----
-
 `cook` is a TypeScript CLI for scaffolding directories and files from lightweight `.rcp` recipes. It is designed to be fast for one-off filesystem work, but reusable enough to become part of a real team workflow.
 
 The local product spec lives at `docs/cook-spec.md`. That directory is intentionally gitignored, so the checked-in README serves as the public-facing guide for the repository.
