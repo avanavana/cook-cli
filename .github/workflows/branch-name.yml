@@ -15,7 +15,7 @@ jobs:
         env:
           HEAD_BRANCH: ${{ github.head_ref }}
         run: |
-          if [[ "$HEAD_BRANCH" == "dev" ]]; then
+          if [[ "$HEAD_BRANCH" == "dev" || "$HEAD_BRANCH" == "main" ]]; then
             exit 0
           fi
           pattern='^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert|release)\/[a-z0-9]+([._-][a-z0-9]+)*$'
