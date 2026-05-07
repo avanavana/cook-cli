@@ -2,9 +2,7 @@
   <img src=".github/logo.png" alt="lipsum-cli logo" width="280">
 </p>
 
-# `cook`
-
----
+<h1 align="center"><code>cook</code> CLI</h1>
 
 `cook` is a TypeScript CLI for scaffolding directories and files from lightweight `.rcp` recipes. It is designed to be fast for one-off filesystem work, but reusable enough to become part of a real team workflow.
 
