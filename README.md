@@ -6,29 +6,32 @@ The local product spec lives at `docs/cook-spec.md`. That directory is intention
 
 ## Features
 
-**Plain-text `.rcp` recipes**  
-Recipes are indentation-first and easy to read in Git, code review, and the terminal. The format keeps structure in a contiguous outline and uses explicit file content blocks only where raw file bodies need reliable boundaries.
+**Describe a project once, generate it anywhere**  
+Instead of manually creating the same folders and starter files over and over, Cook lets you describe the shape of a project in a small text file and apply it wherever you need it. It works just as well for codebases, writing workspaces, research folders, scratch projects, and team templates.
 
-**Reusable variables**  
-Recipes support `{{name}}` placeholders in node names, file headers, and file bodies. You can bind values with named flags, positional arguments, files on disk, or stdin for shell-friendly automation.
+**Readable templates that don’t feel like programming**  
+Cook’s template format is built to be simple enough to read at a glance. You describe folders with indentation, attach file contents only where needed, and keep the whole thing easy to review in the terminal or in Git.
 
-**Structural expansions**  
-The language supports built-in structural expansion forms such as `{{0..4}}`, `{{0..10..2}}`, `{{a..d}}`, and `{{api,web,docs}}`. This keeps repeated scaffolding declarative without turning the recipe format into a programming language.
+**One template, many variations**  
+You can turn a single template into many different outputs by filling in placeholders like project names, package names, or environment labels. That makes it easy to reuse the same starting point for every new app, workspace, client project, or experiment without copying and editing files by hand.
 
-**Dry-run previews with `cook taste`**  
-`cook taste` runs the same parse, bind, expansion, and planning pipeline as `cook`, but stops before any writes happen. It shows the rendered tree, the resolved bindings, the file plan, and overwrite conflicts so you can trust the result before applying it.
+**Generate repeated structures without repetitive typing**  
+Cook can expand ranges and lists for you, so one line can create a whole set of related folders or files. This is especially useful for monorepos, repeated content pipelines, test fixtures, or any setup where you need the same pattern more than once.
 
-**Flexible recipe sources**  
-You can apply saved recipes, filesystem paths, stdin recipes, or short inline structure expressions. That makes `cook` useful for both long-lived templates and quick shell-driven scaffolding.
+**Preview everything before Cook touches the filesystem**  
+`cook taste` gives you a dry run of the final result before anything is written. You can see the rendered tree, the values that were filled in, and any overwrite conflicts up front, which makes the tool much safer to use in real working directories.
 
-**Saved recipe workflow**  
-Recipes can be added to `~/.cook/recipes`, listed, shown, edited, validated, and cloned from existing directories. Reserved command words are blocked as saved recipe names to keep the CLI vocabulary consistent.
+**Use templates from wherever you already work**  
+Cook can run saved templates, local files, piped stdin input, or short inline expressions you type directly into the shell. That means it fits both long-lived reusable workflows and fast one-off moments when you just want to scaffold something immediately.
 
-**Clone-to-recipe support**  
-`cook clone` converts an existing directory tree into a reusable `.rcp` file. By default it captures structure and empty files, and it can optionally include file contents when you need a fuller starting point.
+**Build your own personal template library**  
+You can save templates, list them, show them, edit them, validate them, and reuse them across projects. Over time, Cook becomes a lightweight toolkit of your own proven project starters instead of a pile of copied folders.
 
-**Configurable editor integration**  
-`cook edit` resolves editors in a predictable order: `COOK_EDITOR`, `~/.cook/config.toml`, `EDITOR`, then `vi`. That keeps recipe editing aligned with the rest of a developer’s terminal workflow.
+**Turn an existing folder tree into a reusable starter**  
+If you already have a good structure on disk, `cook clone` can turn it into a template instead of making you rewrite it manually. That makes it easy to capture a working layout, share it with others, and standardize how new projects get started.
+
+**Stay close to normal terminal workflows**  
+Cook is designed for people who already live in the command line. It works with editors, pipes, files, arguments, and shell scripting conventions, so it adds power without forcing you into a separate app or a heavy framework-specific generator.
 
 ## Status
 
