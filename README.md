@@ -6,36 +6,29 @@ The local product spec lives at `docs/cook-spec.md`. That directory is intention
 
 ## Features
 
-**Describe a project once, generate it anywhere**  
+**Describe once, recreate anywhere**  
 Instead of manually creating the same folders and starter files over and over, Cook lets you describe the shape of a project in a small text file and apply it wherever you need it. It works just as well for codebases, writing workspaces, research folders, scratch projects, and team templates.
 
-**Readable templates that don’t feel like programming**  
+**Simple, clear templating language**  
 Cook’s template format is built to be simple enough to read at a glance. You describe folders with indentation, attach file contents only where needed, and keep the whole thing easy to review in the terminal or in Git.
 
-**One template, many variations**  
+**One template, many possibilities**  
 You can turn a single template into many different outputs by filling in placeholders like project names, package names, or environment labels. That makes it easy to reuse the same starting point for every new app, workspace, client project, or experiment without copying and editing files by hand.
 
-**Generate repeated structures without repetitive typing**  
+**Repeat structures, not keystrokes**  
 Cook can expand ranges and lists for you, so one line can create a whole set of related folders or files. This is especially useful for monorepos, repeated content pipelines, test fixtures, or any setup where you need the same pattern more than once.
 
-**Preview everything before Cook touches the filesystem**  
-`cook taste` gives you a dry run of the final result before anything is written. You can see the rendered tree, the values that were filled in, and any overwrite conflicts up front, which makes the tool much safer to use in real working directories.
-
-**Use templates from wherever you already work**  
+**Cook where you work**  
 Cook can run saved templates, local files, piped stdin input, or short inline expressions you type directly into the shell. That means it fits both long-lived reusable workflows and fast one-off moments when you just want to scaffold something immediately.
 
-**Build your own personal template library**  
+**Your personal scaffolding library**  
 You can save templates, list them, show them, edit them, validate them, and reuse them across projects. Over time, Cook becomes a lightweight toolkit of your own proven project starters instead of a pile of copied folders.
 
-**Turn an existing folder tree into a reusable starter**  
+**Capture existing patterns**  
 If you already have a good structure on disk, `cook clone` can turn it into a template instead of making you rewrite it manually. That makes it easy to capture a working layout, share it with others, and standardize how new projects get started.
 
-**Stay close to normal terminal workflows**  
+**Plays well with others**
 Cook is designed for people who already live in the command line. It works with editors, pipes, files, arguments, and shell scripting conventions, so it adds power without forcing you into a separate app or a heavy framework-specific generator.
-
-## Status
-
-The parser, renderer, planner, saved-recipe commands, inline-expression mode, and clone flow are implemented. `cook raw` is scaffolded as the future Ink-powered interactive mode, but the interactive UI itself is not implemented yet.
 
 ## Requirements
 
@@ -91,7 +84,7 @@ cook -i
 When you run `cook <recipe>` or `cook taste <recipe>`, the first argument is resolved in this order:
 
 1. `-` means read the recipe itself from stdin.
-2. If the value contains whitespace and is not an existing saved recipe or filesystem path, it is treated as an inline structure expression.
+2. If the value contains whitespace and is not an existing saved recipe or filesystem path, it is treated as an inline recipe expression.
 3. If it contains a `/`, starts with `.`, starts with `~`, or ends with `.rcp`, it is treated as a path.
 4. Otherwise it is resolved as `~/.cook/recipes/<recipe>.rcp`.
 
@@ -121,7 +114,7 @@ cook <recipe> [args...] [options]
 
 Arguments:
 
-- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline expression
+- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline recipe expression
 - `[args...]`: positional values for any remaining unbound variables
 
 Options:
@@ -143,7 +136,7 @@ cook taste <recipe> [args...] [options]
 
 Arguments:
 
-- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline expression
+- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline recipe expression
 - `[args...]`: positional values for any remaining unbound variables
 
 Options:
@@ -173,12 +166,12 @@ cook add <name> [source]
 Arguments:
 
 - `<name>`: saved recipe name
-- `[source]`: recipe path, inline expression, or omit it and pipe the recipe via stdin
+- `[source]`: recipe path, inline recipe expression, or omit it and pipe the recipe via stdin
 
 Behavior:
 
 - existing recipe files can be imported directly
-- inline expressions are normalized into standard multi-line `.rcp` format before they are saved
+- inline recipe expressions are normalized into standard multi-line `.rcp` format before they are saved
 - reserved names such as `add`, `clone`, `list`, `raw`, `taste`, and `validate` are rejected
 
 ### `cook clone`
@@ -245,7 +238,7 @@ cook validate <recipe> [args...] [options]
 
 Arguments:
 
-- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline expression
+- `<recipe>`: saved recipe name, `.rcp` path, `-`, or inline recipe expression
 - `[args...]`: positional values for any remaining unbound variables
 
 Options:
@@ -312,13 +305,21 @@ printf 'my-app' | cook web-app --variable project@- -o ~/Code
 cook workspace my-monorepo dashboard
 ```
 
-### Use an inline structure expression
+### Use an inline recipe expression
 
 ```bash
 cook 'project / src README.md' -o ~/Desktop
 ```
 
-### Save an inline expression as a recipe
+This creates:
+
+```text
+project/
+  src/
+  README.md
+```
+
+### Save an inline recipe expression as a recipe
 
 ```bash
 cook add scratch 'project / notes todos.md'
@@ -391,9 +392,13 @@ Supported V1 expansion forms:
 Example:
 
 ````text
-services
+packages
   {{api,web,docs}}
+    src
+    README.md
 ````
+
+If you only need a few one-off entries, writing them out directly is usually clearer. Expansions become useful when the same subtree or naming pattern needs to repeat across multiple items.
 
 ### File content blocks
 
@@ -414,9 +419,9 @@ src/main.ts
 console.log('Hello from Cook');
 ````
 
-### Inline expressions
+### Inline recipe expressions
 
-Inline expressions are intentionally small and only describe structure. They do not support file bodies.
+Inline recipe expressions are intentionally small and only describe structure. They do not support file bodies.
 
 Control tokens:
 
@@ -427,6 +432,14 @@ Quoted names with spaces are supported:
 
 ```bash
 cook '"My Project" / "reference docs" README.md'
+```
+
+This creates:
+
+```text
+My Project/
+  reference docs/
+  README.md
 ```
 
 ### Saved recipe location
