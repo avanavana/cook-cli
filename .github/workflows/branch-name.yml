@@ -1,0 +1,26 @@
+name: Branch Naming
+
+on:
+  pull_request:
+    branches:
+      - dev
+      - main
+
+jobs:
+  validate-branch-name:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Validate branch name
+        env:
+          HEAD_BRANCH: ${{ github.head_ref }}
+        run: |
+          if [[ "$HEAD_BRANCH" == "dev" ]]; then
+            exit 0
+          fi
+          pattern='^(feat|fix|docs|chore|refactor|test|ci|build|perf|revert|release)\/[a-z0-9]+([._-][a-z0-9]+)*$'
+          if [[ ! "$HEAD_BRANCH" =~ $pattern ]]; then
+            echo "Branch \"$HEAD_BRANCH\" does not match the conventional branch pattern."
+            echo "Use a name like feat/readme-and-release or fix/path-resolution."
+            exit 1
+          fi
