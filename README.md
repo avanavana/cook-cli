@@ -2,7 +2,9 @@
   <img src=".github/logo.png" alt="lipsum-cli logo" width="280">
 </p>
 
-# `cook`
+<p align="center">
+  <code>cook</code> CLI
+</p>
 
 ---
 
