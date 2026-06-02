@@ -1,8 +1,11 @@
+<!-- markdownlint-disable MD041 -->
+<!-- markdownlint-disable MD033 -->
 <p align="center">
   <img src=".github/logo.png" alt="lipsum-cli logo" width="280">
 </p>
 
 <h1 align="center"><code>cook</code> CLI</h1>
+<!-- markdownlint-enable MD033 -->
 
 `cook` is a TypeScript CLI for scaffolding directories and files from lightweight `.rcp` recipes. It is designed to be fast for one-off filesystem work, but reusable enough to become part of a real team workflow.
 
@@ -31,7 +34,7 @@ You can save templates, list them, show them, edit them, validate them, and reus
 **Capture existing patterns**  
 If you already have a good structure on disk, `cook clone` can turn it into a template instead of making you rewrite it manually. That makes it easy to capture a working layout, share it with others, and standardize how new projects get started.
 
-**Plays well with others**
+**Plays well with others**  
 Cook is designed for people who already live in the command line. It works with editors, pipes, files, arguments, and shell scripting conventions, so it adds power without forcing you into a separate app or a heavy framework-specific generator.
 
 ## Requirements
