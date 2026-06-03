@@ -1,5 +1,6 @@
 import { resolve } from 'node:path';
 
+import { saveRecipe } from '../config/recipe-store.js';
 import { loadCookConfig } from '../config/config.js';
 import { applyPlan } from '../core/apply-plan.js';
 import { CookError } from '../core/cook-error.js';
@@ -18,6 +19,7 @@ export interface CommonRecipeOptions {
   out?: string;
   variable?: string[];
   var?: string[];
+  save?: string;
   force?: boolean;
   noClobber?: boolean;
   merge?: boolean;
@@ -60,6 +62,9 @@ export async function executeRecipeCommand(
 
   validateBatchPlanOutputs(plans);
   const preview = formatExecutionPlans(plans);
+  const savedRecipePath = options.save
+    ? await saveRecipe(options.save, recipeSource.source)
+    : undefined;
 
   if (!options.dryRun) {
     for (const plan of plans) {
@@ -76,7 +81,11 @@ export async function executeRecipeCommand(
     }
   }
 
-  return preview;
+  if (!savedRecipePath) {
+    return preview;
+  }
+
+  return `Saved recipe as "${options.save}" (${savedRecipePath}).\n\n${preview}`;
 }
 
 function resolveConflictStrategy(options: CommonRecipeOptions): ConflictStrategy {

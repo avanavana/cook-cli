@@ -11,6 +11,7 @@ export function registerApplyCommand(program: Command): void {
     .option('--force', 'overwrite files without prompting')
     .option('--no-clobber', 'skip files that already exist')
     .option('--merge', 'create missing entries but never overwrite content')
+    .option('-s, --save <name>', 'save the resolved recipe into ~/.cook/recipes/<name>.rcp before applying')
     .option('--variable <name=value>', 'bind a variable explicitly', collectValue, [])
     .option('--var <name=value>', 'alias for --variable', collectValue, [])
     .addHelpText(
@@ -21,6 +22,7 @@ Examples:
   cook ./recipes/web-app.rcp --variable project=my-app -o ~/Code
   cat quick.rcp | cook - --variable project=draft-project -o ~/Desktop
   cook 'project / src README.md' -o ~/Desktop
+  cook 'project / src README.md' --save scratch -o ~/Desktop
 `
     )
     .action(async (recipe: string, args: string[], options: CommonRecipeOptions) => {

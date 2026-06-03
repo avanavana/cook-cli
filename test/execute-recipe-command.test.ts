@@ -1,4 +1,4 @@
-import { mkdtempSync, mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
@@ -38,6 +38,35 @@ describe('executeRecipeCommand', () => {
         out: process.cwd(),
         var: [ 'name=WI{{00..02}}' ]
       })).rejects.toThrow(/exceeds the configured limit of 2/);
+    } finally {
+      if (previousHome === undefined) {
+        delete process.env.HOME;
+      } else {
+        process.env.HOME = previousHome;
+      }
+    }
+  });
+
+  it('can save a resolved recipe and still cook it in the same run', async () => {
+    const tempHomeDirectory = mkdtempSync(path.join(os.tmpdir(), 'cook-home-'));
+    const outputDirectory = mkdtempSync(path.join(os.tmpdir(), 'cook-out-'));
+    const previousHome = process.env.HOME;
+
+    process.env.HOME = tempHomeDirectory;
+
+    try {
+      const output = await executeRecipeCommand('project / src README.md', [], {
+        dryRun: false,
+        out: outputDirectory,
+        save: 'scratch'
+      });
+      const savedRecipePath = path.join(tempHomeDirectory, '.cook', 'recipes', 'scratch.rcp');
+      const cookedReadmePath = path.join(outputDirectory, 'project', 'README.md');
+
+      expect(output).toContain('Saved recipe as "scratch"');
+      expect(existsSync(savedRecipePath)).toBe(true);
+      expect(readFileSync(savedRecipePath, 'utf8')).toBe('project\n  src\n  README.md');
+      expect(existsSync(cookedReadmePath)).toBe(true);
     } finally {
       if (previousHome === undefined) {
         delete process.env.HOME;
