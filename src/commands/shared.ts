@@ -1,11 +1,14 @@
 import { resolve } from 'node:path';
 
+import { loadCookConfig } from '../config/config.js';
 import { applyPlan } from '../core/apply-plan.js';
 import { CookError } from '../core/cook-error.js';
+import { assertDishCountWithinLimit, assertRenderedPathCountWithinLimit, resolveExecutionLimits } from '../core/execution-limits.js';
 import { parseRecipe } from '../core/parse-recipe.js';
 import { planExecution, type ConflictStrategy } from '../core/plan-execution.js';
 import { renderRecipe } from '../core/render-recipe.js';
 import { resolveRecipeSource } from '../core/recipe-source.js';
+import { flattenRenderedNodes } from '../core/recipe-tree.js';
 import { readProcessStdin } from '../core/stdin.js';
 import { loadExpandedBindingSets } from '../core/resolve-variables.js';
 import type { ExecutionPlan } from '../core/recipe-types.js';
@@ -31,15 +34,22 @@ export async function executeRecipeCommand(
     [ ...(options.variable ?? []), ...(options.var ?? []) ],
     async () => readProcessStdin()
   );
+  const limits = resolveExecutionLimits(await loadCookConfig());
+
+  assertDishCountWithinLimit(explicitBindingSets.length, limits);
+
   const conflictStrategy = resolveConflictStrategy(options);
   const outDirectory = resolve(options.out ?? process.cwd());
   const plans: ExecutionPlan[] = [];
+  let renderedPathCount = 0;
 
   for (const explicitBindings of explicitBindingSets) {
     const renderedRecipe = renderRecipe(recipe, {
       explicitBindings,
       positionalArguments
     });
+    renderedPathCount += flattenRenderedNodes(renderedRecipe.roots).length;
+    assertRenderedPathCountWithinLimit(renderedPathCount, limits);
     const plan = await planExecution(renderedRecipe, {
       outDirectory,
       conflictStrategy
