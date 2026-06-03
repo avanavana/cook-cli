@@ -8,7 +8,9 @@
     "cook": "dist/index.js"
   },
   "files": [
-    "dist"
+    "dist",
+    "assets/default-recipes",
+    "scripts/postinstall.js"
   ],
   "engines": {
     "node": ">=20.0.0"
@@ -18,6 +20,8 @@
     "check": "tsc --noEmit",
     "commitlint": "commitlint --config commitlint.config.cjs",
     "lint": "eslint .",
+    "postinstall": "node scripts/postinstall.js",
+    "prepack": "npm run build",
     "release": "semantic-release",
     "test": "vitest run",
     "test:watch": "vitest"

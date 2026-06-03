@@ -51,14 +51,28 @@ Cook is designed for people who already live in the command line. It works with 
 git clone https://github.com/avanavana/cook-cli.git
 cd cook-cli
 pnpm install
-pnpm build
-pnpm link --global
+npm i -g .
 ```
 
-After linking, the `cook` binary is available globally:
+After the global install finishes, the `cook` binary is available globally:
 
 ```bash
 cook --help
+```
+
+The install also creates:
+
+- `~/.cook/`
+- `~/.cook/recipes/`
+- `~/.cook/recipes/reference.rcp`
+- `~/.cook/config.toml`
+
+The bundled `reference.rcp` and the default `config.toml` are created only if they do not already exist.
+
+To inspect the bundled recipe reference after install:
+
+```bash
+cook show reference
 ```
 
 For local development without a global link, you can also run:
@@ -340,40 +354,114 @@ cook clone ./existing-project imported-project
 
 ## Recipes
 
-### `.rcp` structure
+Cook installs a bundled recipe reference at `~/.cook/recipes/reference.rcp`. The rest of this section documents the same language in README form, from the common rules to the rarer ones.
 
-An `.rcp` file has two logical sections:
+### Comments
 
-1. a contiguous structure outline at the top of the file
-2. zero or more file content blocks after the first blank line
+Standalone lines that begin with `#` are ignored by the parser.
 
-Structure rules:
-
-- the outline starts on line 1
-- blank lines are not allowed inside the outline
-- tabs are invalid
-- indentation defines parent-child relationships
+- comments are allowed before the structure outline
+- comments are allowed inside the outline
+- comments are allowed between content blocks
+- raw file bodies are not parsed for comments, so Markdown headings such as `# Hello` stay intact
 
 Example:
 
 ````text
-{{project}}
-  src
-    app
-    components
-    lib
-  public
+# This is a comment.
+# So is this.
+
+project
   README.md
-  package.json
 ````
+
+### Structure outline
+
+Every recipe starts with a structure outline. Each non-comment line in the outline defines exactly one path segment.
+
+Rules:
+
+- indentation defines parent-child relationships
+- blank lines end the outline and begin the content-block section
+- tabs are invalid
+- `/` is not allowed in structure lines
+- absolute paths are invalid
+- multiple top-level entries are allowed
+
+Example:
+
+````text
+workspace
+  apps
+    web
+    api
+  docs
+README.md
+````
+
+### File and directory inference
+
+Cook infers what each leaf entry means:
+
+- entries with children are directories
+- leaf entries containing `.` are files
+- dotfiles such as `.gitignore` are files
+- extensionless leaf entries such as `Dockerfile` are treated as directories unless a content block targets them
+
+That last rule lets recipes support filenames like `Dockerfile` and `Makefile` without needing extra syntax.
+
+Example:
+
+````text
+project
+  Dockerfile
+
+Dockerfile
+---
+FROM node:22
+````
+
+### File content blocks
+
+After the first blank line following the outline, you can attach file bodies.
+
+Each content block has:
+
+1. a file header
+2. a separator line containing exactly `---`
+3. a raw body
+
+Example:
+
+````text
+src
+  main.ts
+
+src/main.ts
+---
+console.log('Hello from Cook');
+````
+
+Notes:
+
+- the header can be just a filename like `README.md` when it is unique in the outline
+- if the same filename appears more than once, use the full relative path such as `packages/api/README.md`
+- content bodies are stored raw and can contain Markdown, JSON, shell scripts, and other text without extra escaping
 
 ### Variables
 
-Use `{{name}}` everywhere:
+Use `{{name}}` placeholders when you want the same recipe to render differently each time.
 
-- in node names
-- in file content block headers
+Variables can appear:
+
+- in structure node names
+- in content block headers
 - in file bodies
+
+Variable names:
+
+- must start with a letter or `_`
+- can then use letters, numbers, `_`, and `-`
 
 Example:
 
@@ -389,46 +477,71 @@ Created by Cook.
 
 ### Structural expansions
 
-Supported V1 expansion forms:
+Cook also supports structural expansions for repeated directory or file patterns.
 
-- `{{0..4}}`
-- `{{0..10..2}}`
-- `{{a..d}}`
+Supported forms:
+
 - `{{api,web,docs}}`
+- `{{1..3}}`
+- `{{0..10..2}}`
+- `{{a..c}}`
+
+Expansions work in:
+
+- structure node names
+- content block headers
 
 Example:
 
 ````text
 packages
   {{api,web,docs}}
-    src
     README.md
+docs
+  section-{{a..c}}.md
+snapshots
+  run-{{1..3}}
 ````
 
-If you only need a few one-off entries, writing them out directly is usually clearer. Expansions become useful when the same subtree or naming pattern needs to repeat across multiple items.
+Notes:
 
-### File content blocks
+- expansions are inclusive
+- descending numeric ranges need an explicit negative step, such as `{{5..1..-1}}`
+- expansions are for paths and headers, not file-body interpolation
+- file bodies only interpolate named variables such as `{{project}}`
 
-Each content block uses:
+### Ambiguous filenames
 
-1. a file path header
-2. a line containing exactly `---`
-3. a raw body
+Content block headers can target a file by basename or by full relative path.
 
-Example:
+Use the basename when it is unique:
 
 ````text
-src
-  main.ts
+project
+  README.md
 
-src/main.ts
+README.md
 ---
-console.log('Hello from Cook');
+Root file
+````
+
+Use the full relative path when the basename appears more than once:
+
+````text
+project
+  README.md
+  packages
+    api
+      README.md
+
+packages/api/README.md
+---
+API package docs
 ````
 
 ### Inline recipe expressions
 
-Inline recipe expressions are intentionally small and only describe structure. They do not support file bodies.
+Inline recipe expressions are a shortcut for small structure-only recipes passed directly on the command line. They do not support content blocks or comments.
 
 Control tokens:
 
@@ -451,14 +564,13 @@ My Project/
 
 ### Saved recipe location
 
-By default, Cook stores its local application data under `~/.cook`:
+Cook stores its local application data under `~/.cook`:
 
 ```text
 ~/.cook/
   recipes/
+    reference.rcp
   config.toml
-  history/
-  cache/
 ```
 
 ## Development

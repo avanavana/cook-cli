@@ -17,19 +17,23 @@ export function parseRecipe(source: string): RecipeTemplate {
   const normalizedSource = source.replace(/\r\n/g, '\n');
   const lines = normalizedSource.split('\n');
 
-  if (lines.every((line) => line.trim() === '')) {
+  const structureStartIndex = lines.findIndex((line) => !isIgnorableOutsideContentBlock(line));
+
+  if (structureStartIndex === -1) {
     throw new CookError('EMPTY_RECIPE', 'Recipe files cannot be empty.');
   }
 
-  const firstBlankLineIndex = lines.findIndex((line) => line.trim() === '');
+  const firstBlankLineIndex = lines.findIndex(
+    (line, index) => index >= structureStartIndex && line.trim() === ''
+  );
   const structureEndIndex = firstBlankLineIndex === -1 ? lines.length : firstBlankLineIndex;
-  const structureLines = lines.slice(0, structureEndIndex);
+  const structureLines = lines.slice(structureStartIndex, structureEndIndex);
 
-  if (structureLines.length === 0) {
-    throw new CookError('INVALID_STRUCTURE', 'The structure block must start at line 1.');
+  if (structureLines.every((line) => isCommentLine(line))) {
+    throw new CookError('INVALID_STRUCTURE', 'Recipes must define at least one outline entry.');
   }
 
-  const outline = parseStructureBlock(structureLines);
+  const outline = parseStructureBlock(structureLines, structureStartIndex + 1);
   const contentBlocks = parseContentBlocks(lines, structureEndIndex);
 
   const recipe: RecipeTemplate = {
@@ -44,30 +48,36 @@ export function parseRecipe(source: string): RecipeTemplate {
   return recipe;
 }
 
-function parseStructureBlock(lines: string[]): RecipeNodeTemplate[] {
+function parseStructureBlock(lines: string[], startLine: number): RecipeNodeTemplate[] {
   const roots: RecipeNodeTemplate[] = [];
   const stack: PendingNode[] = [];
   const indentationWidth = inferIndentationWidth(lines);
 
   for (const [ index, line ] of lines.entries()) {
+    const lineNumber = startLine + index;
+
+    if (isCommentLine(line)) {
+      continue;
+    }
+
     if (line.includes('\t')) {
-      throw new CookError('INVALID_INDENTATION', `Tabs are not allowed in the structure block (line ${index + 1}).`);
+      throw new CookError('INVALID_INDENTATION', `Tabs are not allowed in the structure block (line ${lineNumber}).`);
     }
 
     if (line.trim() === '') {
-      throw new CookError('INVALID_STRUCTURE', `Blank lines are not allowed in the structure block (line ${index + 1}).`);
+      throw new CookError('INVALID_STRUCTURE', `Blank lines are not allowed in the structure block (line ${lineNumber}).`);
     }
 
     const indent = countLeadingSpaces(line);
     const name = line.trim();
 
-    validateNodeName(name, index + 1);
+    validateNodeName(name, lineNumber);
 
     if (indentationWidth !== null) {
       if (indent % indentationWidth !== 0) {
         throw new CookError(
           'INVALID_INDENTATION',
-          `Line ${index + 1} does not align to the recipe indentation width of ${indentationWidth} spaces.`
+          `Line ${lineNumber} does not align to the recipe indentation width of ${indentationWidth} spaces.`
         );
       }
 
@@ -77,14 +87,14 @@ function parseStructureBlock(lines: string[]): RecipeNodeTemplate[] {
         if (indent > previousIndent + indentationWidth) {
           throw new CookError(
             'INVALID_INDENTATION',
-            `Line ${index + 1} increases indentation by more than one level.`
+            `Line ${lineNumber} increases indentation by more than one level.`
           );
         }
       }
     } else if (indent > 0) {
       throw new CookError(
         'INVALID_INDENTATION',
-        `Line ${index + 1} is indented before the recipe establishes an indentation width.`
+        `Line ${lineNumber} is indented before the recipe establishes an indentation width.`
       );
     }
 
@@ -93,9 +103,9 @@ function parseStructureBlock(lines: string[]): RecipeNodeTemplate[] {
     }
 
     const node: RecipeNodeTemplate = {
-      id: `node-${index + 1}-${roots.length + stack.length}`,
+      id: `node-${lineNumber}-${roots.length + stack.length}`,
       name,
-      line: index + 1,
+      line: lineNumber,
       children: [],
       forcedFile: false
     };
@@ -121,14 +131,14 @@ function parseContentBlocks(lines: string[], structureEndIndex: number): RecipeC
   const blocks: RecipeContentBlockTemplate[] = [];
   let index = structureEndIndex;
 
-  while (index < lines.length && lines[index]?.trim() === '') {
+  while (index < lines.length && isIgnorableOutsideContentBlock(lines[index] ?? '')) {
     index += 1;
   }
 
   while (index < lines.length) {
     const header = lines[index] ?? '';
 
-    if (header.trim() === '') {
+    if (isIgnorableOutsideContentBlock(header)) {
       index += 1;
       continue;
     }
@@ -158,7 +168,7 @@ function parseContentBlocks(lines: string[], structureEndIndex: number): RecipeC
 
       if (
         nextHeader !== undefined &&
-        nextHeader.trim() !== '' &&
+        !isIgnorableOutsideContentBlock(nextHeader) &&
         !nextHeader.startsWith(' ') &&
         !nextHeader.startsWith('\t') &&
         nextSeparator === '---'
@@ -241,6 +251,10 @@ function resolveUniqueLeaf(
 
 function inferIndentationWidth(lines: string[]): number | null {
   for (const line of lines) {
+    if (isCommentLine(line)) {
+      continue;
+    }
+
     const spaces = countLeadingSpaces(line);
 
     if (spaces > 0) {
@@ -272,4 +286,12 @@ function validateNodeName(name: string, line: number): void {
       `Line ${line} contains "/". Structure lines must describe one path segment at a time.`
     );
   }
+}
+
+function isCommentLine(line: string): boolean {
+  return line.trimStart().startsWith('#');
+}
+
+function isIgnorableOutsideContentBlock(line: string): boolean {
+  return line.trim() === '' || isCommentLine(line);
 }
