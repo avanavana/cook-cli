@@ -586,6 +586,12 @@ Cook stores its local application data under `~/.cook`:
   config.toml
 ```
 
+Useful `config.toml` keys:
+
+- `editor = "code --wait"`: choose the editor used by `cook edit`
+- `max_dishes = 500`: cap how many expanded dishes a single command may create
+- `max_rendered_paths = 50000`: cap the total rendered paths across all expanded dishes
+
 ## Development
 
 Useful local commands:

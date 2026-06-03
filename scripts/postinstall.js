@@ -8,6 +8,10 @@ import { fileURLToPath } from 'node:url';
 const DEFAULT_CONFIG_SOURCE = `# Cook configuration
 # Set editor to override the editor used by \`cook edit\`.
 # editor = "code --wait"
+# Limit how many expanded dishes one command may create.
+# max_dishes = 500
+# Limit the total rendered paths across all expanded dishes.
+# max_rendered_paths = 50000
 `;
 
 function getCookHomeDirectory() {

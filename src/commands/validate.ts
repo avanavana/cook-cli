@@ -1,8 +1,11 @@
 import { Command } from 'commander';
 
+import { loadCookConfig } from '../config/config.js';
+import { assertDishCountWithinLimit, assertRenderedPathCountWithinLimit, resolveExecutionLimits } from '../core/execution-limits.js';
 import { parseRecipe } from '../core/parse-recipe.js';
 import { renderRecipe } from '../core/render-recipe.js';
 import { resolveRecipeSource } from '../core/recipe-source.js';
+import { flattenRenderedNodes } from '../core/recipe-tree.js';
 import { readProcessStdin } from '../core/stdin.js';
 import { loadExpandedBindingSets } from '../core/resolve-variables.js';
 
@@ -29,10 +32,19 @@ Examples:
         [ ...(options.variable ?? []), ...(options.var ?? []) ],
         async () => readProcessStdin()
       );
+      const limits = resolveExecutionLimits(await loadCookConfig());
+
+      assertDishCountWithinLimit(explicitBindingSets.length, limits);
+
+      let renderedPathCount = 0;
       const renderedRecipes = explicitBindingSets.map((explicitBindings) => renderRecipe(recipe, {
         explicitBindings,
         positionalArguments: args
       }));
+      for (const renderedRecipe of renderedRecipes) {
+        renderedPathCount += flattenRenderedNodes(renderedRecipe.roots).length;
+        assertRenderedPathCountWithinLimit(renderedPathCount, limits);
+      }
       const output = renderedRecipes.length === 1
         ? {
           ok: true,

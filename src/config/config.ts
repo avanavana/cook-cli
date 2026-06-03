@@ -7,6 +7,8 @@ import { getCookConfigPath } from './app-paths.js';
 
 export interface CookUserConfig {
   editor?: string;
+  maxDishes?: number;
+  maxRenderedPaths?: number;
 }
 
 export async function loadCookConfig(): Promise<CookUserConfig> {
@@ -14,9 +16,21 @@ export async function loadCookConfig(): Promise<CookUserConfig> {
     const configSource = await readFile(getCookConfigPath(), 'utf8');
     const parsedConfig = parseToml(configSource);
 
-    return typeof parsedConfig.editor === 'string'
-      ? { editor: parsedConfig.editor }
-      : {};
+    const config: CookUserConfig = {};
+
+    if (typeof parsedConfig.editor === 'string') {
+      config.editor = parsedConfig.editor;
+    }
+
+    if (isPositiveInteger(parsedConfig.max_dishes)) {
+      config.maxDishes = parsedConfig.max_dishes;
+    }
+
+    if (isPositiveInteger(parsedConfig.max_rendered_paths)) {
+      config.maxRenderedPaths = parsedConfig.max_rendered_paths;
+    }
+
+    return config;
   } catch {
     return {};
   }
@@ -59,4 +73,8 @@ export async function openInEditor(targetPath: string): Promise<void> {
       reject(new Error(`Editor exited with code ${code ?? 'unknown'}.`));
     });
   });
+}
+
+function isPositiveInteger(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value > 0;
 }
