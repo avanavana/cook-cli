@@ -105,9 +105,10 @@ cook -i
 When you run `cook <recipe>` or `cook taste <recipe>`, the first argument is resolved in this order:
 
 1. `-` means read the recipe itself from stdin.
-2. If the value contains whitespace and is not an existing saved recipe or filesystem path, it is treated as an inline recipe expression.
-3. If it contains a `/`, starts with `.`, starts with `~`, or ends with `.rcp`, it is treated as a path.
-4. Otherwise it is resolved as `~/.cook/recipes/<recipe>.rcp`.
+2. If the value contains whitespace, is not an existing saved recipe or filesystem path, and uses standalone inline control tokens like `/` or `..`, it is treated as an inline recipe expression.
+3. Otherwise, if it contains whitespace but does not look path-like, it is also treated as an inline recipe expression.
+4. If it starts with `.`, starts with `~`, is absolute, ends with `.rcp`, or contains a path separator inside a token such as `folder/recipe.rcp`, it is treated as a path.
+5. Otherwise it is resolved as `~/.cook/recipes/<recipe>.rcp`.
 
 #### Variable binding
 
