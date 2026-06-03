@@ -14,10 +14,23 @@ export function getCookConfigPath(): string {
   return path.join(getCookHomeDirectory(), 'config.toml');
 }
 
-export async function ensureCookRecipesDirectory(): Promise<string> {
+export async function ensureCookHomeStructure(): Promise<{
+  cookHomeDirectory: string;
+  recipesDirectory: string;
+}> {
+  const cookHomeDirectory = getCookHomeDirectory();
   const recipesDirectory = getCookRecipesDirectory();
 
   await mkdir(recipesDirectory, { recursive: true });
+
+  return {
+    cookHomeDirectory,
+    recipesDirectory
+  };
+}
+
+export async function ensureCookRecipesDirectory(): Promise<string> {
+  const { recipesDirectory } = await ensureCookHomeStructure();
 
   return recipesDirectory;
 }
