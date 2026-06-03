@@ -22,7 +22,6 @@
     "lint": "eslint .",
     "postinstall": "node scripts/postinstall.js",
     "prepack": "npm run build",
-    "release": "semantic-release",
     "test": "vitest run",
     "test:watch": "vitest"
   },
