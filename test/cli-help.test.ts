@@ -42,6 +42,29 @@ describe('CLI help', () => {
     expect(stderr).toContain('Run `cook -h` for usage guidance.');
     expect(stderr).not.toContain('Usage:');
   });
+
+  it('passes repeated subcommand options through the top-level parser', async () => {
+    const writes: string[] = [];
+    const stdoutWriteSpy = vi.spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      writes.push(String(chunk));
+      return true;
+    });
+
+    try {
+      await createProgram().parseAsync(
+        [ 'node', 'cook', 'taste', '{{id}} README.md', '--var', 'id=WI{{00..01}}' ],
+        { from: 'node' }
+      );
+    } finally {
+      stdoutWriteSpy.mockRestore();
+    }
+
+    const stdout = writes.join('');
+
+    expect(stdout).toContain('Dishes (2)');
+    expect(stdout).toContain('id="WI00"');
+    expect(stdout).toContain('id="WI01"');
+  });
 });
 
 describe('recipe names', () => {

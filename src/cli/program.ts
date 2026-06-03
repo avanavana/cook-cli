@@ -15,6 +15,7 @@ export function createProgram(): Command {
 
   program
     .name('cook')
+    .enablePositionalOptions()
     .description(
       [
         'CLI-first scaffolding from .rcp recipes',
