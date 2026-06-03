@@ -651,6 +651,6 @@ Branching and release workflow:
 - feature work should use conventional branch names such as `feat/parser-collisions` or `fix/clone-empty-files`
 - pull requests should target `dev`
 - releases happen by merging `dev` into `main`
-- pushes to `main` trigger `semantic-release`
+- pushes to `main` trigger the release workflow, which publishes the version already recorded in `package.json` and `CHANGELOG.md`
 
 See [CONTRIBUTING.md](./CONTRIBUTING.md) for the full workflow.

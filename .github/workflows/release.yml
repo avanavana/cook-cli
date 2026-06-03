@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 permissions:
   contents: write
@@ -39,7 +40,54 @@ jobs:
           pnpm check
           pnpm test
 
-      - name: Run semantic-release
+      - name: Resolve release version
+        id: release
+        shell: bash
+        run: |
+          version="$(node --input-type=module -e "import fs from 'node:fs'; const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8')); process.stdout.write(pkg.version);")"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version" >> "$GITHUB_OUTPUT"
+
+      - name: Ensure release tag is new
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: pnpm release
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists locally."
+            exit 1
+          fi
+
+          if git ls-remote --exit-code --tags origin "refs/tags/$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists on origin."
+            exit 1
+          fi
+
+      - name: Extract release notes
+        env:
+          VERSION: ${{ steps.release.outputs.version }}
+        run: |
+          awk -v version="$VERSION" '
+            $0 ~ ("^## \\[" version "\\] - ") {
+              in_section = 1
+              next
+            }
+            in_section && $0 ~ "^## \\[" {
+              exit
+            }
+            in_section {
+              print
+            }
+          ' CHANGELOG.md > /tmp/release-notes.md
+
+          if [ ! -s /tmp/release-notes.md ]; then
+            echo "Could not find a CHANGELOG.md section for version $VERSION."
+            exit 1
+          fi
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.release.outputs.tag }}
+          name: ${{ steps.release.outputs.version }}
+          body_path: /tmp/release-notes.md
+          target_commitish: ${{ github.sha }}
