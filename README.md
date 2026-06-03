@@ -145,8 +145,8 @@ Options:
 - `--force`: overwrite files without prompting
 - `--no-clobber`: skip files that already exist
 - `--merge`: create missing entries but never overwrite content
-- `--variable <name=value>`: bind a variable explicitly or load it from `name@path` / `name@-`
-- `--var <name=value>`: alias for `--variable`
+- `--variable <name=value>`: bind a variable explicitly or load it from `name@path` / `name@-`; repeat the option to bind multiple variables
+- `--var <name=value>`: alias for `--variable`; expanded values such as `name=WI{{00..09}}` fan out into multiple full recipe runs
 
 ### `cook taste`
 
@@ -167,8 +167,8 @@ Options:
 - `--force`: preview the plan as if overwrites are allowed
 - `--no-clobber`: preview skip behavior for existing files
 - `--merge`: preview merge behavior for existing files
-- `--variable <name=value>`: bind a variable explicitly or load it from `name@path` / `name@-`
-- `--var <name=value>`: alias for `--variable`
+- `--variable <name=value>`: bind a variable explicitly or load it from `name@path` / `name@-`; repeat the option to bind multiple variables
+- `--var <name=value>`: alias for `--variable`; expanded values such as `name=WI{{00..09}}` fan out into multiple full recipe previews
 
 Output includes:
 
@@ -319,6 +319,18 @@ cook web-app --variable project@./project-name.txt -o ~/Code
 
 ```bash
 printf 'my-app' | cook web-app --variable project@- -o ~/Code
+```
+
+### Bind multiple variables
+
+```bash
+cook somerecipe --var var1=hello --var var2=world
+```
+
+### Fan out one recipe into multiple dishes
+
+```bash
+cook someotherrecipe --var name=WI{{00..09}}
 ```
 
 ### Use positional variables

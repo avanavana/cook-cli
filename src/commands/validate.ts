@@ -4,7 +4,7 @@ import { parseRecipe } from '../core/parse-recipe.js';
 import { renderRecipe } from '../core/render-recipe.js';
 import { resolveRecipeSource } from '../core/recipe-source.js';
 import { readProcessStdin } from '../core/stdin.js';
-import { loadExplicitBindings } from '../core/resolve-variables.js';
+import { loadExpandedBindingSets } from '../core/resolve-variables.js';
 
 export function createValidateCommand(): Command {
   return new Command('validate')
@@ -25,19 +25,27 @@ Examples:
     .action(async (recipeArgument: string, args: string[], options: { variable?: string[]; var?: string[] }) => {
       const recipeSource = await resolveRecipeSource(recipeArgument);
       const recipe = parseRecipe(recipeSource.source);
-      const explicitBindings = await loadExplicitBindings(
+      const explicitBindingSets = await loadExpandedBindingSets(
         [ ...(options.variable ?? []), ...(options.var ?? []) ],
         async () => readProcessStdin()
       );
-      const renderedRecipe = renderRecipe(recipe, {
+      const renderedRecipes = explicitBindingSets.map((explicitBindings) => renderRecipe(recipe, {
         explicitBindings,
         positionalArguments: args
-      });
-      const output = {
-        ok: true,
-        files: renderedRecipe.files.map((file) => file.relativePath),
-        variables: renderedRecipe.bindings
-      };
+      }));
+      const output = renderedRecipes.length === 1
+        ? {
+          ok: true,
+          files: renderedRecipes[0]!.files.map((file) => file.relativePath),
+          variables: renderedRecipes[0]!.bindings
+        }
+        : {
+          ok: true,
+          dishes: renderedRecipes.map((renderedRecipe) => ({
+            files: renderedRecipe.files.map((file) => file.relativePath),
+            variables: renderedRecipe.bindings
+          }))
+        };
 
       process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
     });

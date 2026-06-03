@@ -140,6 +140,7 @@ export function parsePlaceholderToken(expression: string): PlaceholderToken {
     const end = Number.parseInt(rawEnd, 10);
     const defaultStep = start <= end ? 1 : -1;
     const step = explicitStep === undefined ? defaultStep : Number.parseInt(explicitStep, 10);
+    const paddingWidth = inferNumericPaddingWidth(rawStart, rawEnd);
 
     if (step === 0) {
       throw new CookError('INVALID_EXPANSION', `Expansion "{{${expression}}}" cannot use a zero step.`);
@@ -163,11 +164,11 @@ export function parsePlaceholderToken(expression: string): PlaceholderToken {
 
     if (step > 0) {
       for (let current = start; current <= end; current += step) {
-        values.push(String(current));
+        values.push(formatExpandedNumber(current, paddingWidth));
       }
     } else {
       for (let current = start; current >= end; current += step) {
-        values.push(String(current));
+        values.push(formatExpandedNumber(current, paddingWidth));
       }
     }
 
@@ -234,4 +235,23 @@ export function parsePlaceholderToken(expression: string): PlaceholderToken {
   }
 
   throw new CookError('INVALID_PLACEHOLDER', `Invalid placeholder expression "{{${expression}}}".`);
+}
+
+function inferNumericPaddingWidth(rawStart: string, rawEnd: string): number {
+  const widths = [ rawStart, rawEnd ]
+    .map((value) => value.replace(/^-/, ''))
+    .filter((value) => value.length > 1 && value.startsWith('0'))
+    .map((value) => value.length);
+
+  return widths.length > 0 ? Math.max(...widths) : 0;
+}
+
+function formatExpandedNumber(value: number, paddingWidth: number): string {
+  if (paddingWidth === 0) {
+    return String(value);
+  }
+
+  const sign = value < 0 ? '-' : '';
+
+  return `${sign}${Math.abs(value).toString().padStart(paddingWidth, '0')}`;
 }
