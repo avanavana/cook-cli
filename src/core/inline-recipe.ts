@@ -5,6 +5,11 @@ interface InlineNode {
   children: InlineNode[];
 }
 
+export interface InlineExpressionSyntax {
+  hasControlToken: boolean;
+  hasEmbeddedPathSeparator: boolean;
+}
+
 export function parseInlineExpression(expression: string): InlineNode {
   const tokens = tokenizeInlineExpression(expression);
 
@@ -97,6 +102,22 @@ export function normalizeInlineExpressionToRecipe(expression: string): string {
   return lines.join('\n');
 }
 
+export function inspectInlineExpressionSyntax(expression: string): InlineExpressionSyntax {
+  try {
+    const tokens = tokenizeInlineExpression(expression);
+
+    return {
+      hasControlToken: tokens.some((token) => token === '/' || token === '..'),
+      hasEmbeddedPathSeparator: tokens.some((token) => token !== '/' && token !== '..' && /[\\/]/.test(token))
+    };
+  } catch {
+    return {
+      hasControlToken: /(^|\s)(\/|\.\.)(?=\s|$)/.test(expression),
+      hasEmbeddedPathSeparator: false
+    };
+  }
+}
+
 function tokenizeInlineExpression(expression: string): string[] {
   const tokens: string[] = [];
   let currentToken = '';
@@ -149,5 +170,11 @@ function tokenizeInlineExpression(expression: string): string[] {
 }
 
 function looksLikeFileName(value: string): boolean {
-  return value.startsWith('.') || value.includes('.');
+  if (value.startsWith('.')) {
+    return true;
+  }
+
+  const withoutPlaceholders = value.replace(/{{[^{}]+}}/g, '');
+
+  return withoutPlaceholders.includes('.');
 }

@@ -4,7 +4,7 @@ import path from 'node:path';
 import { pathExists } from '../config/app-paths.js';
 import { getSavedRecipePath, savedRecipeExists } from '../config/recipe-store.js';
 import { CookError } from './cook-error.js';
-import { normalizeInlineExpressionToRecipe } from './inline-recipe.js';
+import { inspectInlineExpressionSyntax, normalizeInlineExpressionToRecipe } from './inline-recipe.js';
 import { hasPipedStdin, readProcessStdin } from './stdin.js';
 
 export interface ResolvedRecipeSource {
@@ -29,12 +29,17 @@ export async function resolveRecipeSource(recipeArgument: string): Promise<Resol
   const expandedPath = expandHomePath(recipeArgument);
   const savedRecipeFound = await savedRecipeExists(recipeArgument);
   const filesystemPathExists = await pathExists(expandedPath);
-  const looksLikePath = recipeArgument.includes('/')
+  const inlineSyntax = inspectInlineExpressionSyntax(recipeArgument);
+  const looksLikeExplicitPath = path.isAbsolute(expandedPath)
     || recipeArgument.startsWith('.')
     || recipeArgument.startsWith('~')
     || recipeArgument.endsWith('.rcp');
+  const shouldTreatAsInline = /\s/.test(recipeArgument)
+    && !savedRecipeFound
+    && !filesystemPathExists
+    && (inlineSyntax.hasControlToken || (!looksLikeExplicitPath && !inlineSyntax.hasEmbeddedPathSeparator));
 
-  if (/\s/.test(recipeArgument) && !savedRecipeFound && !filesystemPathExists && !looksLikePath) {
+  if (shouldTreatAsInline) {
     return {
       kind: 'inline',
       source: normalizeInlineExpressionToRecipe(recipeArgument),
@@ -42,7 +47,7 @@ export async function resolveRecipeSource(recipeArgument: string): Promise<Resol
     };
   }
 
-  if (looksLikePath || filesystemPathExists) {
+  if (looksLikeExplicitPath || filesystemPathExists || inlineSyntax.hasEmbeddedPathSeparator) {
     return {
       kind: 'path',
       source: await readFile(expandedPath, 'utf8'),
