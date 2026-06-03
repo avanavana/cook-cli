@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import { createProgram } from '../src/cli/program.js';
 import { createTasteCommand } from '../src/commands/taste.js';
@@ -18,6 +18,28 @@ describe('CLI help', () => {
 
     expect(help).toContain('cook taste web-app my-app -o ~/Code');
     expect(help).toContain('cook taste ./recipes/app.rcp --variable project=my-app');
+  });
+
+  it('prints a short hint instead of full usage after command errors', async () => {
+    const writes: string[] = [];
+    const stderrWriteSpy = vi.spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+      writes.push(String(chunk));
+      return true;
+    });
+
+    try {
+      await expect(createProgram().parseAsync([ 'node', 'cook', '--wat' ], { from: 'node' })).rejects.toMatchObject({
+        code: 'commander.unknownOption'
+      });
+    } finally {
+      stderrWriteSpy.mockRestore();
+    }
+
+    const stderr = writes.join('');
+
+    expect(stderr).toContain(`error: unknown option '--wat'`);
+    expect(stderr).toContain('Run `cook -h` for usage guidance.');
+    expect(stderr).not.toContain('Usage:');
   });
 });
 

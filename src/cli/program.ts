@@ -30,7 +30,14 @@ export function createProgram(): Command {
       ].join('\n')
     )
     .version('0.1.0')
-    .showHelpAfterError()
+    .configureOutput({
+      outputError: (message, write) => {
+        const trimmedMessage = message.trimEnd();
+
+        write(`${trimmedMessage}\nRun \`cook -h\` for usage guidance.\n`);
+      }
+    })
+    .exitOverride()
     .addHelpText(
       'afterAll',
       `
