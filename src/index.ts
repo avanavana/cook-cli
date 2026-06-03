@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 
 import { createProgram } from './cli/program.js';
-import { isCookError } from './core/cook-error.js';
+import { formatCookError, isCookError } from './core/cook-error.js';
 
 async function main(): Promise<void> {
   try {
     await createProgram().parseAsync(normalizeArgv(process.argv));
   } catch (error) {
     if (isCookError(error)) {
-      process.stderr.write(`${error.message}\n`);
+      process.stderr.write(`${formatCookError(error)}\n`);
       process.exitCode = 1;
       return;
     }
