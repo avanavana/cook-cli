@@ -285,18 +285,32 @@ Difference from `cook taste`:
 
 ### `cook raw` / `cook -i`
 
-Reserved for the future interactive authoring flow built with Ink.
+Open the interactive recipe authoring flow built with Ink.
 
 ```bash
 cook raw
 cook -i
 ```
 
-Current behavior:
+What it does:
 
-- the command exists
-- it is intentionally routed separately from the rest of the CLI architecture
-- it currently exits with a not-yet-implemented message while the interactive flow is still under construction
+- lets you type or paste a recipe directly in the terminal
+- shows a live structure preview and discovered variable names as you write
+- walks you through variable values and destination selection
+- builds a full execution preview before you decide what to do next
+- lets you apply the recipe immediately, save it, or save and apply in one flow
+
+Key interactions:
+
+- `Ctrl+N`: continue from the recipe editor into the guided flow
+- `Ctrl+B`: go back during variable, destination, or save steps
+- `a`: apply from the review step
+- `s`: save from the review step
+- `w`: save and apply from the review step
+- `e`: return to recipe editing from the review step
+- `d`: change the destination from the review step
+- `q`: quit from the review step
+- `Ctrl+C`: exit at any time
 
 ## Examples
 
