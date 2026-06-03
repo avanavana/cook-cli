@@ -46,6 +46,8 @@
 # Inline expressions:
 # - The CLI also supports small inline recipes such as:
 #   cook '{{project}} / src README.md'
+# - You can save and cook an inline recipe at the same time:
+#   cook '{{project}} / src README.md' --save scratch -o ~/Desktop
 # - Inline expressions only describe structure. They do not support file bodies.
 #
 # This example uses variables, list expansions, numeric ranges, alphabetical

@@ -24,6 +24,7 @@ export function createProgram(): Command {
         '  cook ./recipes/web-app.rcp --variable project=my-app -o ~/Code',
         '  cat quick.rcp | cook - --variable project=draft-project -o ~/Desktop',
         `  cook 'project / src README.md' -o ~/Desktop`,
+        `  cook 'project / src README.md' --save scratch -o ~/Desktop`,
         '  cook taste web-app my-app -o ~/Code',
         '  cook add scratch "project / notes todos.md"',
         '  cook clone ./existing-project imported-project'
@@ -46,6 +47,7 @@ Examples:
   cook ./recipes/web-app.rcp --variable project=my-app -o ~/Code
   cat quick.rcp | cook - --variable project=draft-project -o ~/Desktop
   cook 'project / src README.md' -o ~/Desktop
+  cook 'project / src README.md' --save scratch -o ~/Desktop
   cook taste web-app my-app -o ~/Code
   cook add scratch 'project / notes todos.md'
   cook clone ./existing-project imported-project

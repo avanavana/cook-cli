@@ -10,6 +10,7 @@ describe('CLI help', () => {
 
     expect(help).toContain('cook taste');
     expect(help).toContain(`cook 'project / src README.md' -o ~/Desktop`);
+    expect(help).toContain(`cook 'project / src README.md' --save scratch -o ~/Desktop`);
     expect(help).toContain('cook clone ./existing-project imported-project');
   });
 

@@ -142,6 +142,7 @@ Arguments:
 Options:
 
 - `-o, --out <path>`: destination parent directory
+- `-s, --save <name>`: save the resolved recipe to `~/.cook/recipes/<name>.rcp` before applying it
 - `--force`: overwrite files without prompting
 - `--no-clobber`: skip files that already exist
 - `--merge`: create missing entries but never overwrite content
@@ -351,6 +352,12 @@ This creates:
 project/
   src/
   README.md
+```
+
+### Save and cook an inline recipe in one command
+
+```bash
+cook 'project / src README.md' --save scratch -o ~/Desktop
 ```
 
 ### Save an inline recipe expression as a recipe
