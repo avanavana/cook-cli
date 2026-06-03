@@ -1,4 +1,4 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readdir, readFile, rename, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 
 import { CookError } from '../core/cook-error.js';
@@ -11,6 +11,7 @@ export const RESERVED_RECIPE_NAMES = [
   'help',
   'list',
   'raw',
+  'rename',
   'show',
   'taste',
   'validate',
@@ -54,6 +55,27 @@ export async function listSavedRecipes(): Promise<string[]> {
     .filter((entry) => entry.isFile() && entry.name.endsWith('.rcp'))
     .map((entry) => entry.name.replace(/\.rcp$/, ''))
     .sort((left, right) => left.localeCompare(right));
+}
+
+export async function renameSavedRecipe(currentName: string, nextName: string): Promise<string> {
+  ensureRecipeNameAllowed(currentName);
+  ensureRecipeNameAllowed(nextName);
+
+  const currentPath = getSavedRecipePath(currentName);
+
+  if (!await pathExists(currentPath)) {
+    throw new CookError('RECIPE_NOT_FOUND', `Saved recipe "${currentName}" does not exist.`);
+  }
+
+  const nextPath = getSavedRecipePath(nextName);
+
+  if (await pathExists(nextPath)) {
+    throw new CookError('RECIPE_ALREADY_EXISTS', `Saved recipe "${nextName}" already exists.`);
+  }
+
+  await rename(currentPath, nextPath);
+
+  return nextPath;
 }
 
 export function ensureRecipeNameAllowed(name: string): void {

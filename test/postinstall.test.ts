@@ -18,8 +18,8 @@ describe('postinstall bootstrap', () => {
 
     expect(existsSync(configPath)).toBe(true);
     expect(readFileSync(configPath, 'utf8')).toContain('# Cook configuration');
-    expect(readFileSync(path.join(tempHomeDirectory, '.cook', 'recipes', 'reference.rcp'), 'utf8'))
-      .toContain('# Cook recipe reference');
+    expect(readFileSync(path.join(tempHomeDirectory, '.cook', 'recipes', 'example.rcp'), 'utf8'))
+      .toContain('# Cook recipe example');
   });
 
   it('does not overwrite an existing config file', () => {
@@ -38,7 +38,7 @@ describe('postinstall bootstrap', () => {
   it('does not overwrite an existing bundled recipe file', () => {
     const tempHomeDirectory = mkdtempSync(path.join(os.tmpdir(), 'cook-home-'));
     const recipesDirectory = path.join(tempHomeDirectory, '.cook', 'recipes');
-    const recipePath = path.join(recipesDirectory, 'reference.rcp');
+    const recipePath = path.join(recipesDirectory, 'example.rcp');
 
     mkdirSync(recipesDirectory, { recursive: true });
     writeFileSync(recipePath, 'custom reference\n', { encoding: 'utf8', flag: 'w' });

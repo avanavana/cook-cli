@@ -6,6 +6,7 @@ import { createCloneCommand } from '../commands/clone.js';
 import { createEditCommand } from '../commands/edit.js';
 import { createListCommand } from '../commands/list.js';
 import { createRawCommand } from '../commands/raw.js';
+import { createRenameCommand } from '../commands/rename.js';
 import { createShowCommand } from '../commands/show.js';
 import { createTasteCommand } from '../commands/taste.js';
 import { createValidateCommand } from '../commands/validate.js';
@@ -28,6 +29,7 @@ export function createProgram(): Command {
         `  cook 'project / src README.md' --save scratch -o ~/Desktop`,
         '  cook taste web-app my-app -o ~/Code',
         '  cook add scratch "project / notes todos.md"',
+        '  cook rename example helloworld',
         '  cook clone ./existing-project imported-project'
       ].join('\n')
     )
@@ -51,6 +53,7 @@ Examples:
   cook 'project / src README.md' --save scratch -o ~/Desktop
   cook taste web-app my-app -o ~/Code
   cook add scratch 'project / notes todos.md'
+  cook rename example helloworld
   cook clone ./existing-project imported-project
 `
     );
@@ -61,6 +64,7 @@ Examples:
   program.addCommand(createCloneCommand());
   program.addCommand(createListCommand());
   program.addCommand(createShowCommand());
+  program.addCommand(createRenameCommand());
   program.addCommand(createEditCommand());
   program.addCommand(createValidateCommand());
   program.addCommand(createRawCommand());

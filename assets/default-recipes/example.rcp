@@ -1,4 +1,4 @@
-# Cook recipe reference
+# Cook recipe example
 # ---------------------
 # This bundled recipe is both a working example and a syntax guide.
 #
@@ -78,7 +78,7 @@
 ---
 # {{project}}
 
-Created from Cook's bundled `reference` recipe.
+Created from Cook's bundled `example` recipe.
 
 This file demonstrates variables in file bodies.
 

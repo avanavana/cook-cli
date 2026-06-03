@@ -64,15 +64,15 @@ The install also creates:
 
 - `~/.cook/`
 - `~/.cook/recipes/`
-- `~/.cook/recipes/reference.rcp`
+- `~/.cook/recipes/example.rcp`
 - `~/.cook/config.toml`
 
-The bundled `reference.rcp` and the default `config.toml` are created only if they do not already exist.
+The bundled `example.rcp` and the default `config.toml` are created only if they do not already exist.
 
-To inspect the bundled recipe reference after install:
+To inspect the bundled example recipe after install:
 
 ```bash
-cook show reference
+cook show example
 ```
 
 For local development without a global link, you can also run:
@@ -92,6 +92,7 @@ cook add <name> [source]
 cook clone <source-path> <recipe-name> [options]
 cook list
 cook show <name>
+cook rename <current-name> <next-name>
 cook edit <name>
 cook validate <recipe> [args...] [options]
 cook raw
@@ -195,7 +196,7 @@ Behavior:
 
 - existing recipe files can be imported directly
 - inline recipe expressions are normalized into standard multi-line `.rcp` format before they are saved
-- reserved names such as `add`, `clone`, `list`, `raw`, `taste`, and `validate` are rejected
+- reserved names such as `add`, `clone`, `list`, `raw`, `rename`, `taste`, and `validate` are rejected
 
 ### `cook clone`
 
@@ -236,6 +237,14 @@ Print a saved recipe to stdout.
 cook show <name>
 ```
 
+### `cook rename`
+
+Rename a saved recipe on disk.
+
+```bash
+cook rename <current-name> <next-name>
+```
+
 ### `cook edit`
 
 Open a saved recipe in your configured editor.
@@ -253,7 +262,7 @@ Editor resolution order:
 
 ### `cook validate`
 
-Validate a recipe and print a JSON summary of the resolved files and variables.
+Validate a recipe without writing files and print a JSON summary of the rendered output.
 
 ```bash
 cook validate <recipe> [args...] [options]
@@ -268,6 +277,11 @@ Options:
 
 - `--variable <name=value>`: bind a variable explicitly or load it from `name@path` / `name@-`
 - `--var <name=value>`: alias for `--variable`
+
+Difference from `cook taste`:
+
+- `cook taste` validates and also plans against a destination directory, so it shows conflicts and write behavior
+- `cook validate` validates the recipe and variable resolution only, without filesystem conflict checks, and returns JSON
 
 ### `cook raw` / `cook -i`
 
@@ -374,7 +388,7 @@ cook clone ./existing-project imported-project
 
 ## Recipes
 
-Cook installs a bundled recipe reference at `~/.cook/recipes/reference.rcp`. The rest of this section documents the same language in README form, from the common rules to the rarer ones.
+Cook installs a bundled example recipe at `~/.cook/recipes/example.rcp`. The rest of this section documents the same language in README form, from the common rules to the rarer ones.
 
 ### Comments
 
@@ -589,7 +603,7 @@ Cook stores its local application data under `~/.cook`:
 ```text
 ~/.cook/
   recipes/
-    reference.rcp
+    example.rcp
   config.toml
 ```
 

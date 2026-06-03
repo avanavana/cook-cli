@@ -11,6 +11,7 @@ describe('CLI help', () => {
     expect(help).toContain('cook taste');
     expect(help).toContain(`cook 'project / src README.md' -o ~/Desktop`);
     expect(help).toContain(`cook 'project / src README.md' --save scratch -o ~/Desktop`);
+    expect(help).toContain('cook rename example helloworld');
     expect(help).toContain('cook clone ./existing-project imported-project');
   });
 
@@ -70,6 +71,7 @@ describe('CLI help', () => {
 describe('recipe names', () => {
   it('rejects reserved subcommand names', () => {
     expect(() => ensureRecipeNameAllowed('add')).toThrowError();
+    expect(() => ensureRecipeNameAllowed('rename')).toThrowError();
     expect(() => ensureRecipeNameAllowed('taste')).toThrowError();
   });
 });
