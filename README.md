@@ -374,6 +374,12 @@ cook workspace my-monorepo dashboard
 cook 'project / src README.md' -o ~/Desktop
 ```
 
+### Author a recipe interactively
+
+```bash
+cook raw
+```
+
 This creates:
 
 ```text
