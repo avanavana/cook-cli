@@ -36,13 +36,13 @@ PRs should explain:
 ## Releases
 
 - merge reviewed work from feature branches into `dev`
-- when `dev` is ready, merge `dev` into `main`
-- a push to `main` runs `semantic-release`
-- semantic-release generates release notes, updates `CHANGELOG.md`, and publishes a GitHub Release
+- when `dev` is ready, open and review a PR from `dev` into `main`
+- merging that PR into `main` runs the release workflow
+- the release workflow verifies the project, creates a tag from `package.json`, and publishes a GitHub Release using the matching `CHANGELOG.md` entry
 
 ## Post-release sync
 
-Because semantic-release commits the updated `CHANGELOG.md` back to `main`, `main` will move ahead of `dev` after every release.
+Because releases are cut from `main`, that branch can still move ahead of `dev` through merge commits and release tags.
 
 After each release completes:
 
