@@ -1,0 +1,108 @@
+# Cook recipe reference
+# ---------------------
+# This bundled recipe is both a working example and a syntax guide.
+#
+# Comments:
+# - Standalone lines that begin with `#` are ignored by the parser.
+# - Comment lines are allowed before the outline, inside the outline, and
+#   between content blocks.
+# - Raw file bodies are not parsed for comments, so Markdown headings like
+#   `# Hello` stay intact inside generated files.
+#
+# Recipe layout:
+# - A recipe starts with a structure outline.
+# - Indentation defines parent and child entries.
+# - Use spaces only. Tabs are invalid.
+# - Leave one blank line after the outline before any file content blocks.
+#
+# File and directory inference:
+# - Entries with children are always directories.
+# - Leaf entries that contain a `.` are treated as files.
+# - Dotfiles such as `.gitignore` are treated as files.
+# - Extensionless leaf entries such as `Dockerfile` are treated as directories
+#   unless a content block targets them, which forces them to become files.
+#
+# Variables:
+# - Use `{{name}}` in path segments, content block headers, and file bodies.
+# - Variable names use letters, numbers, `_`, and `-`, and must start with a
+#   letter or underscore.
+#
+# Expansions:
+# - `{{api,web,docs}}` expands a comma-separated list.
+# - `{{1..3}}` expands an inclusive numeric range.
+# - `{{0..10..2}}` expands a numeric range with an explicit step.
+# - `{{a..c}}` expands an inclusive alphabetical range.
+# - Expansions work in path segments and content block headers.
+# - File bodies only interpolate named variables, so expansions inside bodies
+#   remain literal text.
+#
+# Content blocks:
+# - Each block starts with a file header line.
+# - The next line must be exactly `---`.
+# - Everything after that belongs to the file body until the next header.
+# - If a filename appears more than once in the outline, use its full relative
+#   path in the header to avoid ambiguity.
+#
+# Inline expressions:
+# - The CLI also supports small inline recipes such as:
+#   cook '{{project}} / src README.md'
+# - Inline expressions only describe structure. They do not support file bodies.
+#
+# This example uses variables, list expansions, numeric ranges, alphabetical
+# ranges, duplicate filenames, and an extensionless file.
+
+{{project}}
+  src
+    components
+      {{Button,Card}}.tsx
+    index.ts
+  docs
+    README.md
+    intro.md
+    section-{{a..c}}.md
+    api
+      v{{1..3}}
+        overview.md
+  packages
+    {{api,web,docs}}
+      README.md
+  scripts
+    deploy-{{dev,prod}}.sh
+  README.md
+  package.json
+  Dockerfile
+
+{{project}}/README.md
+---
+# {{project}}
+
+Created from Cook's bundled `reference` recipe.
+
+This file demonstrates variables in file bodies.
+
+index.ts
+---
+console.log('Hello from {{project}}');
+
+intro.md
+---
+# Introduction
+
+Welcome to {{project}}.
+
+{{project}}/docs/README.md
+---
+# Docs index
+
+This block uses a full relative path because `README.md` appears more than once.
+
+package.json
+---
+{
+  "name": "{{project}}",
+  "private": true
+}
+
+Dockerfile
+---
+FROM node:22-alpine

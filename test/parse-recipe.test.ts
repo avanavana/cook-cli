@@ -28,6 +28,27 @@ describe('parseRecipe', () => {
     expect(recipe.contentBlocks[0]?.body).toBe('# Hello');
   });
 
+  it('ignores standalone comment lines outside raw file bodies', () => {
+    const recipe = parseRecipe(`# Bundled recipe notes
+# More notes
+
+project
+  src
+  # Structure comments are ignored.
+  README.md
+
+# Content block comments are ignored too.
+README.md
+---
+# Hello
+`);
+
+    expect(recipe.outline).toHaveLength(1);
+    expect(recipe.outline[0]?.name).toBe('project');
+    expect(recipe.outline[0]?.children.map((node) => node.name)).toEqual([ 'src', 'README.md' ]);
+    expect(recipe.contentBlocks[0]?.body).toBe('# Hello\n');
+  });
+
   it('marks an extensionless file when a content block targets it', () => {
     const recipe = parseRecipe(`project\n  Dockerfile\n\nDockerfile\n---\nFROM node:22`);
     const dockerfile = recipe.outline[0]?.children[0];
@@ -45,5 +66,9 @@ describe('parseRecipe', () => {
 
   it('rejects content blocks that reference missing files', () => {
     expect(() => parseRecipe(`project\n  src\n\nREADME.md\n---\n# Hello`)).toThrowError(CookError);
+  });
+
+  it('rejects recipes that only contain comments', () => {
+    expect(() => parseRecipe(`# notes only\n# still empty`)).toThrowError(CookError);
   });
 });
