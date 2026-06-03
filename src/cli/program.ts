@@ -33,7 +33,7 @@ export function createProgram(): Command {
         '  cook clone ./existing-project imported-project'
       ].join('\n')
     )
-    .version('0.1.0')
+    .version('1.3.0')
     .configureOutput({
       outputError: (message, write) => {
         const trimmedMessage = message.trimEnd();
